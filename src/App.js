@@ -1,11 +1,15 @@
 import './App.scss';
-import Nav from './components/Navigations/Nav';
+// import Nav from './components/Navigations/Nav';
 import {
   BrowserRouter as Router,
   Switch,
   Route
 } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
 import Login from './components/Login/Login';
+import Register from './components/Register/Register';
+import { ToastContainer } from 'react-toastify';
+
 
 function App() {
   return (
@@ -15,6 +19,9 @@ function App() {
         <Switch>
           <Route path="/login">
             <Login />
+          </Route>
+          <Route path="/register">
+            <Register />
           </Route>
           <Route path="/news">
             new
@@ -33,6 +40,20 @@ function App() {
           </Route>
         </Switch>
       </div>
+
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      {/* Same as */}
     </Router>
   );
 }
