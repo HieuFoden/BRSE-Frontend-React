@@ -11,6 +11,14 @@ const Register = (props) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const defaultValidInput = {
+        isValidEmail: true,
+        isValidPhone: true,
+        isValidUsername: true,
+        isValidPassword: true,
+        isValidConfirmPassword: true
+    };
+    const [objCheckInput, setObjCheckInput] = useState(defaultValidInput);
 
     let history = useHistory();
     const handleLogin = () => {
@@ -18,46 +26,64 @@ const Register = (props) => {
     }
 
     useEffect(() => {
-        // axios.get('http://localhost:8080/api/test-api').then(data => {
+        // axios.get('http://localhost:8080/api/v1/test-api').then(data => {
         //     console.log('>>>check data :', data)
-        // })
+        // });
+        axios.post('http://localhost:8080/api/v1/register', {
+            email, phone, username, password
+        });
+
     }, []);
 
     const isValidInputs = () => {
+        setObjCheckInput(defaultValidInput);
+
         if (!email) {
             toast.error('メールが必須。');
+            setObjCheckInput({ ...defaultValidInput, isValidEmail: false });
             return false;
         };
+        let regx = /\S+@\S+\.\S+/; //js regular expression check email
+
+        if (!regx.test(email)) {
+            toast.error('メールアドレスの形式が正しくありません。');
+            setObjCheckInput({ ...defaultValidInput, isValidEmail: false });
+            return false;
+        }
+
         if (!phone) {
             toast.error('電話番号が必須。');
+            setObjCheckInput({ ...defaultValidInput, isValidPhone: false });
             return false;
         };
         if (!username) {
             toast.error('ユーザー名が必須。');
+            setObjCheckInput({ ...defaultValidInput, isValidUsername: false });
             return false;
         };
         if (!password) {
             toast.error('パスワードが必須。');
+            setObjCheckInput({ ...defaultValidInput, isValidPassword: false });
             return false;
         };
-        if (password != confirmPassword) {
+        if (password !== confirmPassword) {
             toast.error('パスワードとパスワード確認の値が一致しません。');
+            setObjCheckInput({ ...defaultValidInput, isValidConfirmPassword: false });
             return false;
         };
 
-        let regx = /\S+@\S+\.\S+/; //js regular expression check email
-        if (!regx.test(email)) {
-            toast.error('メールアドレスの形式が正しくありません。');
-        }
-        return false;
 
         return true;
     };
 
     const handleRegister = () => {
         let check = isValidInputs();
-        let userData = { email, phone, username, password };
 
+        if (check === true) {
+            axios.post('http://localhost:8080/api/v1/register', {
+                email, phone, username, password
+            });
+        };
     };
 
     return (
@@ -75,13 +101,13 @@ const Register = (props) => {
                     <div className="content-right col-5 d-flex flex-column gap-3 py-3 ">
                         <div className='form-group'>
                             <label>メール：</label>
-                            <input type="text" className='form-control' placeholder='メールを入力ください'
+                            <input type="text" className={objCheckInput.isValidEmail ? 'form-control' : 'form-control is-invalid'} placeholder='メールを入力ください'
                                 value={email} onChange={(event) => setEmail(event.target.value)}
                             />
                         </div>
                         <div className='form-group'>
                             <label>電話番号：</label>
-                            <input type="text" className='form-control' placeholder='電話番号を入力ください'
+                            <input type="text" className={objCheckInput.isValidPhone ? 'form-control' : 'form-control is-invalid'} placeholder='電話番号を入力ください'
                                 value={phone} onChange={(event) => setPhone(event.target.value)}
                             />
                         </div>
@@ -93,13 +119,13 @@ const Register = (props) => {
                         </div>
                         <div className='form-group'>
                             <label>パスワード：</label>
-                            <input type="password" className='form-control' placeholder='パスワードを入力ください'
+                            <input type="password" className={objCheckInput.isValidPassword ? 'form-control' : 'form-control is-invalid'} placeholder='パスワードを入力ください'
                                 value={password} onChange={(event) => setPassword(event.target.value)}
                             />
                         </div>
                         <div className='form-group'>
                             <label>パスワード確認：</label>
-                            <input type="password" className='form-control' placeholder='パスワード確認を入力ください'
+                            <input type="password" className={objCheckInput.isValidConfirmPassword ? 'form-control' : 'form-control is-invalid'} placeholder='パスワード確認を入力ください'
                                 value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)}
                             />
                         </div>
