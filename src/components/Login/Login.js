@@ -1,11 +1,63 @@
 import './Login.scss';
 import { useHistory } from 'react-router-dom';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
+import { loginUser } from '../../services/userService';
 
 const Login = (props) => {
     let history = useHistory();
+    const [valueLogin, setValueLogin] = useState('');
+    const [password, setPassword] = useState('');
+
+    const defaultValidInput = {
+        isValidValueLogin: true,
+        isValidPassword: true
+    };
+    const [objValidInput, setObjValidInput] = useState(defaultValidInput);
+
+
     const handleCreateNewAccount = (props) => {
         history.push('/register');
-    }
+    };
+    const handleLogin = async () => {
+        setObjValidInput(defaultValidInput);
+
+        if (!valueLogin) {
+            setObjValidInput({ ...defaultValidInput, isValidValueLogin: false });
+            toast.error("メール又は電話番号を入力してください");
+            return;
+        };
+        if (!password) {
+            setObjValidInput({ ...defaultValidInput, isValidPassword: false });
+            toast.error("パスワードを入力してください");
+            return;
+        };
+
+        let response = await loginUser(valueLogin, password);
+        if (response && response.data && +response.data.EC === 0) {
+            //success
+            let data = {
+                isAuthenticated: true, //xac thuc duoc nguoi dung hay chua
+                token: 'fake token'
+            };
+            sessionStorage.setItem("account", JSON.stringify(data));
+            history.push('/');
+            window.location.reload();
+        }
+
+        if (response && response.data && +response.data.EC !== 0) {
+            //error
+            toast.error(response.data.EM);
+        }
+        // console.log('>>>check response login : ', response.data)
+    };
+
+    const handlePressEnter = (event) => {
+        // console.log(event.charCode, event.code)
+        if (event.charCode === 13 && event.code === 'Enter') {
+            handleLogin();
+        }
+    };
 
     return (
         <div className="login-container">
@@ -20,9 +72,22 @@ const Login = (props) => {
                         </div>
                     </div>
                     <div className="content-right col-5 d-flex flex-column gap-3 py-3 ">
-                        <input type="text" className='form-control' placeholder='ユーザー名を入力ください' />
-                        <input type="password" className='form-control' placeholder='パスワードを入力ください' />
-                        <button className='btn btn-primary'>ログイン</button>
+                        <input
+                            type="text"
+                            className={objValidInput.isValidValueLogin ? 'form-control' : 'is-invalid form-control'}
+                            placeholder='ユーザー名を入力ください'
+                            value={valueLogin}
+                            onChange={(event) => { setValueLogin(event.target.value) }}
+                        />
+                        <input
+                            type="password"
+                            className={objValidInput.isValidPassword ? 'form-control' : 'is-invalid form-control'}
+                            placeholder='パスワードを入力ください'
+                            value={password}
+                            onChange={(event) => { setPassword(event.target.value) }}
+                            onKeyPress={(event) => handlePressEnter(event)}
+                        />
+                        <button className='btn btn-primary' onClick={() => handleLogin()}>ログイン</button>
                         <span className='text-center'><a className='forgot-password' href='#'>パスワードを忘れていますか？</a></span>
                         <hr />
                         <div className='text-center'>
